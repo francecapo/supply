@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Gestione Integratori</title>
+<style>
+:root{
+  --bg:#f4f6f8; --card:#fff; --text:#18212b; --muted:#6b7280;
+  --primary:#244a78; --primary-2:#183657; --border:#e5e7eb;
+  --green:#16834b; --green-bg:#e9f7ef; --orange:#b76a00; --orange-bg:#fff4df;
+  --red:#c43b3b; --red-bg:#fdecec; --shadow:0 4px 18px rgba(15,23,42,.07);
+}
+[data-theme="dark"]{
+  --bg:#0f141b; --card:#18202a; --text:#f3f4f6; --muted:#9ca3af;
+  --primary:#78a8dc; --primary-2:#9ec4ed; --border:#2a3441;
+  --green:#45c986; --green-bg:#123524; --orange:#f0a63b; --orange-bg:#38270f;
+  --red:#ff7777; --red-bg:#3a1919; --shadow:0 4px 18px rgba(0,0,0,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+body{padding-bottom:88px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:18px 16px 30px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:27px;margin-bottom:4px}
+h2{font-size:21px;margin-bottom:4px}
+h3{font-size:17px;margin-bottom:5px}
+.subtitle{color:var(--muted);font-size:14px}
+.icon-btn,.small-btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:9px 12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:13px}
+.progress-card{padding:18px}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-value{font-weight:700;color:var(--primary)}
+.progress{height:9px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress>span{display:block;height:100%;background:var(--primary);border-radius:99px;transition:.2s}
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:750;margin:20px 4px 9px}
+.intake{display:flex;align-items:center;gap:12px}
+.intake-main{min-width:0;flex:1}
+.intake-name{font-weight:750;font-size:16px}
+.intake-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.status{font-size:12px;font-weight:700;margin-top:7px}
+.status.done{color:var(--green)}
+.status.pending{color:var(--muted)}
+.status.missed{color:var(--red)}
+.primary{border:0;background:var(--primary);color:#fff;border-radius:12px;padding:11px 14px;font-weight:700;min-width:88px}
+.primary:active,.secondary:active{transform:scale(.98)}
+.secondary{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 13px;font-weight:650}
+.danger{border:0;background:var(--red-bg);color:var(--red);border-radius:11px;padding:9px 12px;font-weight:700}
+.success{background:var(--green-bg);color:var(--green)}
+.warn{background:var(--orange-bg);color:var(--orange)}
+.empty{text-align:center;padding:30px 15px;color:var(--muted)}
+.empty strong{display:block;color:var(--text);font-size:17px;margin-bottom:7px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+label{font-size:13px;font-weight:700}
+input,select{width:100%;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:11px;padding:11px 12px;outline:none}
+input:focus,select:focus{border-color:var(--primary)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.integrator-head,.stock-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:750;margin-top:8px}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.orange{background:var(--orange-bg);color:var(--orange)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+.card-actions{display:flex;gap:7px;margin-top:13px}
+.card-actions button{flex:1}
+.calendar-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calendar-title{font-size:18px;font-weight:800;text-transform:capitalize}
+.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.week div{text-align:center;font-size:11px;color:var(--muted);font-weight:750;padding:5px 0}
+.day{min-height:47px;border:1px solid var(--border);border-radius:11px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text);padding:4px}
+.day.empty-day{background:transparent;border-color:transparent}
+.day-num{font-size:13px;font-weight:700}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border)}
+.dot.green{background:var(--green)} .dot.orange{background:var(--orange)} .dot.red{background:var(--red)}
+.day.today{outline:2px solid var(--primary);outline-offset:-2px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:13px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.detail-list{margin-top:13px}
+.detail-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:0}
+.stock-amount{font-size:22px;font-weight:800}
+.stock-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:0}
+.setting-title{font-weight:700}.setting-desc{font-size:12px;color:var(--muted);margin-top:3px}
+nav{position:fixed;z-index:20;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:8px max(8px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);max-width:760px;margin:auto}
+nav button{border:0;background:transparent;color:var(--muted);padding:7px 2px;border-radius:10px;font-size:11px;font-weight:700}
+nav button.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,transparent)}
+nav .nav-icon{display:block;font-size:19px;line-height:20px;margin-bottom:2px}
+.modal-backdrop{position:fixed;z-index:50;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center}
+.modal-backdrop.show{display:flex}
+.modal{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--card);border-radius:22px 22px 0 0;padding:20px 16px 30px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.close{border:0;background:transparent;color:var(--muted);font-size:25px}
+.confirm-box{text-align:center;padding:10px}
+.toast{position:fixed;z-index:70;left:50%;bottom:94px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 15px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:480px){
+  .app{padding-left:13px;padding-right:13px}
+  .form-grid{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .intake{align-items:flex-start}
+  .primary{min-width:82px;padding:10px}
+  .day{min-height:43px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" class="modal-backdrop"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY = "integratori_app_v1";
+
+const defaultState = {
+  theme: "system",
+  integrators: [],
+  intakes: []
+};
+
+let state = loadState();
+let page = "today";
+let calendarDate = new Date();
+let editingId = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredClone(defaultState);
+    return {...structuredClone(defaultState), ...JSON.parse(raw)};
+  }catch(e){ return structuredClone(defaultState); }
+}
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(state));
+    return true;
+  }catch(e){
+    console.error("Salvataggio locale non riuscito:", e);
+    return false;
+  }
+}
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+function localDateKey(date=new Date()){
+  const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+function parseKey(key){
+  const [y,m,d]=key.split("-").map(Number);
+  return new Date(y,m-1,d);
+}
+function formatDate(date){
+  return new Intl.DateTimeFormat("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(date);
+}
+function formatTime(value){
+  if(!value) return "";
+  const [h,m]=value.split(":");
+  return `${h}:${m}`;
+}
+function escapeHtml(s=""){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function effectiveTheme(){
+  if(state.theme==="system") return matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light";
+  return state.theme;
+}
+function applyTheme(){
+  document.documentElement.dataset.theme=effectiveTheme()==="dark"?"dark":"light";
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",applyTheme);
+
+function scheduledForDate(int,date){
+  if(!int.active) return false;
+  const freq=int.frequency;
+  if(freq.type==="daily") return true;
+  if(freq.type==="weekdays"){
+    return freq.days.includes(date.getDay());
+  }
+  if(freq.type==="every"){
+    const start=parseKey(int.startDate || localDateKey());
+    const diff=Math.floor((new Date(date.getFullYear(),date.getMonth(),date.getDate())-new Date(start.getFullYear(),start.getMonth(),start.getDate()))/86400000);
+    return diff>=0 && diff % Math.max(1,Number(freq.interval))===0;
+  }
+  return false;
+}
+function getScheduled(date){
+  const result=[];
+  state.integrators.forEach(int=>{
+    if(!scheduledForDate(int,date)) return;
+
+    const times=Array.isArray(int.times) && int.times.length ? int.times : [int.time||"08:00"];
+
+    times.forEach((time,index)=>{
+      result.push({
+        ...int,
+        scheduleId:`${int.id}_${index}`,
+        parentId:int.id,
+        time,
+        doseIndex:index
+      });
+    });
+  });
+  return result.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+}
+function getIntake(intId,dateKey,scheduleId=null){
+  return state.intakes.find(x=>x.integratorId===intId && x.date===dateKey && (scheduleId ? x.scheduleId===scheduleId : true));
+}
+function isDone(intId,dateKey,scheduleId=null){
+  return !!getIntake(intId,dateKey,scheduleId)?.done;
+}
+function stockDays(int){
+  const dailyDoses=Array.isArray(int.times)&&int.times.length ? int.times.length : 1;
+  const dose=Number(int.dose)||1;
+  if(!dailyDoses || Number(int.stock)<=0) return 0;
+  return Math.floor(Number(int.stock)/(dailyDoses*dose));
+}
+function stockClass(int){
+  const days=stockDays(int);
+  const threshold=Number(int.threshold)||0;
+  if(Number(int.stock)<=0) return "red";
+  if(days<=threshold) return "orange";
+  return "green";
+}
+function stockLabel(int){
+  const days=stockDays(int);
+  if(Number(int.stock)<=0) return "Terminato";
+  if(days<=Number(int.threshold||0)) return "In esaurimento";
+  return "Disponibile";
+}
+function render(){
+  applyTheme();
+  const app=document.getElementById("app");
+  let content="";
+  if(page==="today") content=renderToday();
+  if(page==="history") content=renderHistory();
+  if(page==="integrators") content=renderIntegrators();
+  if(page==="stock") content=renderStock();
+  if(page==="settings") content=renderSettings();
+  app.innerHTML=`
+    <main class="app">
+      <header>
+        <div>
+          <h1>${page==="today"?"Oggi":page==="history"?"Storico":page==="integrators"?"Integratori":page==="stock"?"Scorte":"Impostazioni"}</h1>
+          <div class="subtitle">${page==="today"?escapeHtml(formatDate(new Date())):"Gestione semplice e locale"}</div>
+        </div>
+        ${page==="today"?`<button class="icon-btn" onclick="goTo('integrators')">＋</button>`:""}
+      </header>
+      ${content}
+    </main>
+    ${renderNav()}
+  `;
+}
+function renderNav(){
+  const items=[
+    ["today","🏠","Oggi"],["history","📅","Storico"],["integrators","💊","Integratori"],["stock","📦","Scorte"],["settings","⚙️","Impostazioni"]
+  ];
+  return `<nav>${items.map(([id,icon,label])=>`<button class="${page===id?"active":""}" onclick="goTo('${id}')"><span class="nav-icon">${icon}</span>${label}</button>`).join("")}</nav>`;
+}
+function goTo(p){page=p;render();window.scrollTo({top:0,behavior:"smooth"});}
+
+function renderToday(){
+  const date=new Date(), key=localDateKey(date), scheduled=getScheduled(date);
+  const done=scheduled.filter(i=>isDone(i.id,key,i.scheduleId)).length;
+  const pct=scheduled.length?Math.round(done/scheduled.length*100):0;
+  if(!scheduled.length){
+    return `<div class="card empty"><strong>Nessun integratore programmato</strong><div>Puoi aggiungere il primo integratore dalla sezione Integratori.</div><div class="actions" style="justify-content:center"><button class="primary" onclick="openIntegratorModal()">＋ Aggiungi integratore</button></div></div>`;
+  }
+  const groups={};
+  scheduled.forEach(i=>{
+    const h=(i.time||"00:00").split(":")[0];
+    const label=Number(h)<12?"Mattina":Number(h)<18?"Pomeriggio":"Sera";
+    (groups[label] ||= []).push(i);
+  });
+  return `
+    <div class="card progress-card">
+      <div class="progress-row"><span>Assunzioni di oggi</span><span class="progress-value">${done} / ${scheduled.length}</span></div>
+      <div class="progress"><span style="width:${pct}%"></span></div>
+    </div>
+    ${Object.entries(groups).map(([label,ints])=>`
+      <div class="section-title">${label}</div>
+      ${ints.map(i=>renderIntakeCard(i,key)).join("")}
+    `).join("")}
+  `;
+}
+function renderIntakeCard(i,key){
+  const intake=getIntake(i.parentId||i.id,key,i.scheduleId), done=!!intake?.done;
+  return `<div class="card intake">
+    <div class="intake-main">
+      <div class="intake-name">${escapeHtml(i.name)}</div>
+      <div class="intake-meta">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} · ${formatTime(i.time)}</div>
+      <div class="status ${done?"done":"pending"}">${done?`✓ Preso alle ${escapeHtml(intake.time)}`:"Da prendere"}</div>
+    </div>
+    ${done
+      ? `<button class="secondary" onclick="toggleIntake('${i.parentId||i.id}','${key}','${i.scheduleId}')">Annulla</button>`
+      : `<button class="primary" onclick="toggleIntake('${i.parentId||i.id}','${key}','${i.scheduleId}')">✓ Preso</button>`}
+  </div>`;
+}
+function toggleIntake(id,dateKey,scheduleId){
+  const int=state.integrators.find(x=>x.id===id);
+  if(!int)return;
+  const existing=getIntake(id,dateKey,scheduleId);
+
+  if(existing?.done){
+    state.intakes=state.intakes.filter(x=>x.id!==existing.id);
+    int.stock=Number(int.stock||0)+1;
+    toast("Assunzione annullata");
+  }else{
+    const now=new Date();
+    state.intakes=state.intakes.filter(x=>!(x.integratorId===id&&x.date===dateKey&&x.scheduleId===scheduleId));
+    state.intakes.push({
+      id:uid(),
+      integratorId:id,
+      scheduleId,
+      date:dateKey,
+      time:now.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}),
+      done:true,
+      quantity:1
+    });
+    int.stock=Math.max(0,Number(int.stock||0)-1);
+    toast("Assunzione registrata");
+  }
+  save();render();
+}
+
+function renderHistory(){
+  const y=calendarDate.getFullYear(), m=calendarDate.getMonth();
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  const start=(first.getDay()+6)%7;
+  const days=[];
+  for(let i=0;i<start;i++) days.push(`<div class="day empty-day"></div>`);
+  for(let d=1;d<=last.getDate();d++){
+    const date=new Date(y,m,d), key=localDateKey(date), scheduled=getScheduled(date);
+    const done=scheduled.filter(i=>isDone(i.id,key,i.scheduleId)).length;
+    let cls="";
+    if(scheduled.length && done===scheduled.length) cls="green";
+    else if(scheduled.length && done>0) cls="orange";
+    else if(scheduled.length) cls="red";
+    const today=key===localDateKey(new Date())?"today":"";
+    days.push(`<button class="day ${today}" onclick="showDay('${key}')"><span class="day-num">${d}</span><span class="dot ${cls}"></span></button>`);
+  }
+  const monthName=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(first);
+  return `
+    <div class="card">
+      <div class="calendar-nav">
+        <button class="small-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="calendar-title">${monthName}</div>
+        <button class="small-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="week">${["L","M","M","G","V","S","D"].map(x=>`<div>${x}</div>`).join("")}</div>
+      <div class="days">${days.join("")}</div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i> Completato</span>
+        <span><i style="background:var(--orange)"></i> Parziale</span>
+        <span><i style="background:var(--red)"></i> Saltato</span>
+        <span><i style="background:var(--border)"></i> Nessun programma</span>
+      </div>
+    </div>
+    <div id="historyDetail"></div>
+  `;
+}
+function changeMonth(delta){
+  calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+delta,1);render();
+}
+function showDay(key){
+  const date=parseKey(key), scheduled=getScheduled(date);
+  const done=scheduled.filter(i=>isDone(i.id,key)).length;
+  document.getElementById("modal").innerHTML=`
+    <div class="modal">
+      <div class="modal-head"><div><h2 style="margin:0;text-transform:capitalize">${escapeHtml(formatDate(date))}</h2><div class="subtitle">${done} / ${scheduled.length} completati</div></div><button class="close" onclick="closeModal()">×</button></div>
+      ${scheduled.length?`<div class="detail-list">${scheduled.map(i=>{
+        const x=getIntake(i.parentId||i.id,key,i.scheduleId);
+        return `<div class="detail-row"><div><strong>${escapeHtml(i.name)}</strong><div class="subtitle">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} · ${formatTime(i.time)}</div></div><div style="text-align:right;font-size:13px;color:${x?.done?"var(--green)":"var(--red)"}">${x?.done?"✓ Preso alle "+escapeHtml(x.time):"✕ Non preso"}</div></div>`;
+      }).join("")}</div>`:`<div class="empty">Nessun integratore programmato.</div>`}
+    </div>`;
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");}
+
+function renderIntegrators(){
+  return `
+    <div class="actions" style="margin-top:0;margin-bottom:14px"><button class="primary" onclick="openIntegratorModal()">＋ Aggiungi integratore</button></div>
+    ${state.integrators.length?state.integrators.map(i=>`
+      <div class="card">
+        <div class="integrator-head">
+          <div><h3>${escapeHtml(i.name)}</h3><div class="subtitle">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} · ${frequencyLabel(i)}</div></div>
+          <span class="badge ${i.active?"green":"orange"}">${i.active?"Attivo":"In pausa"}</span>
+        </div>
+        <div class="subtitle" style="margin-top:8px">Orario: ${formatTime(i.time)}</div>
+        <div class="card-actions">
+          <button class="secondary" onclick="openIntegratorModal('${i.id}')">Modifica</button>
+          <button class="secondary" onclick="toggleActive('${i.id}')">${i.active?"Metti in pausa":"Riattiva"}</button>
+          <button class="danger" onclick="deleteIntegrator('${i.id}')">Elimina</button>
+        </div>
+      </div>
+    `).join(""):`<div class="card empty"><strong>Nessun integratore</strong><div>Aggiungi il primo per iniziare a creare la tua routine.</div></div>`}
+  `;
+}
+function frequencyLabel(i){
+  if(i.frequency.type==="daily")return "ogni giorno";
+  if(i.frequency.type==="weekdays"){
+    const names=["dom","lun","mar","mer","gio","ven","sab"];
+    return i.frequency.days.map(d=>names[d]).join(", ");
+  }
+  return `ogni ${i.frequency.interval} giorni`;
+}
+function openIntegratorModal(id=null){
+  editingId=id;
+  const i=id?state.integrators.find(x=>x.id===id):null;
+  document.getElementById("modal").innerHTML=`
+    <div class="modal">
+      <div class="modal-head"><h2>${i?"Modifica integratore":"Nuovo integratore"}</h2><button class="close" onclick="closeModal()">×</button></div>
+      <form onsubmit="return submitIntegrator(event)">
+        <div class="form-grid">
+          <div class="field full"><label>Nome</label><input id="f-name" required value="${escapeHtml(i?.name||"")}" placeholder="es. Omega 3"></div>
+          <div class="field"><label>Dose</label><input id="f-dose" required type="number" min="0.01" step="any" value="${i?.dose??""}"></div>
+          <div class="field"><label>Unità</label><select id="f-unit">${["capsule","compresse","bustine","misurini","gocce","ml","g","altro"].map(x=>`<option ${i?.unit===x?"selected":""}>${x}</option>`).join("")}</select></div>
+          <div class="field"><label>Frequenza</label><select id="f-frequency" onchange="updateFrequencyFields()">
+            <option value="daily" ${i?.frequency.type==="daily"||!i?"selected":""}>Ogni giorno</option>
+            <option value="weekdays" ${i?.frequency.type==="weekdays"?"selected":""}>Giorni specifici</option>
+            <option value="every" ${i?.frequency.type==="every"?"selected":""}>Ogni X giorni</option>
+          </select></div>
+          <div class="field full">
+            <label>Orari di assunzione</label>
+            <div id="times-container"></div>
+            <div class="subtitle">Inserisci un orario per ogni assunzione giornaliera.</div>
+          </div>
+          <div class="field full" id="frequency-extra"></div>
+          <div class="field"><label>Scorta iniziale</label><input id="f-stock" required type="number" min="0" step="any" value="${i?.stock??""}"></div>
+          <div class="field"><label>Avviso sotto (giorni)</label><input id="f-threshold" type="number" min="0" step="1" value="${i?.threshold??7}"></div>
+        </div>
+        <div class="actions"><button type="button" class="secondary" onclick="closeModal()">Annulla</button><button class="primary" type="submit">${i?"Salva modifiche":"Aggiungi"}</button></div>
+      </form>
+    </div>`;
+  document.getElementById("modal").classList.add("show");
+  updateFrequencyFields(i?.frequency);
+  renderTimeFields(i);
+  document.getElementById("f-dose").addEventListener("input", syncDoseTimeFields);
+}
+function renderTimeFields(existing=null){
+  const container=document.getElementById("times-container");
+  const dose=Math.max(1, Math.floor(Number(document.getElementById("f-dose")?.value)||1));
+  if(!container)return;
+
+  let times=Array.isArray(existing?.times) ? [...existing.times] : [];
+  if(!times.length && existing?.time) times=[existing.time];
+  if(!times.length) times=["08:00"];
+
+  while(times.length<dose){
+    const defaults=["08:00","13:00","20:00","23:00"];
+    times.push(defaults[times.length] || "08:00");
+  }
+  times=times.slice(0,dose);
+
+  container.innerHTML=times.map((time,index)=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="min-width:76px;font-size:13px;font-weight:700">Assunzione ${index+1}</span>
+      <input class="intake-time" type="time" required value="${escapeHtml(time)}" style="flex:1">
+    </div>
+  `).join("");
+}
+
+function syncDoseTimeFields(){
+  const dose=document.getElementById("f-dose");
+  if(dose) renderTimeFields();
+}
+
+function updateFrequencyFields(existing){
+  const type=document.getElementById("f-frequency")?.value;
+  const box=document.getElementById("frequency-extra");
+  if(!box)return;
+  if(type==="weekdays"){
+    const days=existing?.days||[1,2,3,4,5];
+    box.innerHTML=`<label>Giorni</label><div style="display:flex;gap:6px;flex-wrap:wrap">${["Dom","Lun","Mar","Mer","Gio","Ven","Sab"].map((n,idx)=>`<label style="display:flex;align-items:center;gap:5px;border:1px solid var(--border);padding:8px 9px;border-radius:10px;font-size:12px"><input type="checkbox" class="weekday" value="${idx}" ${days.includes(idx)?"checked":""}>${n}</label>`).join("")}</div>`;
+  }else if(type==="every"){
+    box.innerHTML=`<label>Intervallo in giorni</label><input id="f-interval" type="number" min="1" step="1" value="${existing?.interval||2}"><div class="subtitle">La programmazione parte dalla data di inizio.</div>`;
+  }else box.innerHTML="";
+}
+function submitIntegrator(e){
+  e.preventDefault();
+  const type=document.getElementById("f-frequency").value;
+  let frequency={type};
+
+  if(type==="weekdays"){
+    frequency.days=[...document.querySelectorAll(".weekday:checked")].map(x=>Number(x.value));
+    if(!frequency.days.length){
+      toast("Seleziona almeno un giorno");
+      return;
+    }
+  }
+
+  if(type==="every"){
+    frequency.interval=Math.max(1,Number(document.getElementById("f-interval").value||1));
+  }
+
+  const old=editingId?state.integrators.find(x=>x.id===editingId):null;
+
+  const dose=Math.max(1, Math.floor(Number(document.getElementById("f-dose").value)||0));
+  const times=[...document.querySelectorAll(".intake-time")].map(x=>x.value).filter(Boolean);
+
+  if(times.length!==dose){
+    toast("Inserisci un orario per ogni assunzione");
+    return;
+  }
+
+  const item={
+    id:editingId||uid(),
+    name:document.getElementById("f-name").value.trim(),
+    dose:dose,
+    unit:document.getElementById("f-unit").value,
+    times,
+    time:times[0],
+    frequency,
+    startDate:old?.startDate||localDateKey(new Date()),
+    stock:Number(document.getElementById("f-stock").value),
+    threshold:Number(document.getElementById("f-threshold").value||0),
+    active:old?.active!==false
+  };
+
+  if(!item.name||item.dose<=0){
+    toast("Controlla nome e dose");
+    return;
+  }
+
+  if(old){
+    Object.assign(old,item);
+  }else{
+    state.integrators.push(item);
+  }
+
+  save();
+  closeModal();
+
+  // Dopo il salvataggio vai direttamente alla pagina Integratori,
+  // così il nuovo elemento è immediatamente visibile.
+  page="integrators";
+  render();
+
+  toast(old?"Integratore aggiornato":"Integratore aggiunto");
+}
+function toggleActive(id){
+  const i=state.integrators.find(x=>x.id===id); if(!i)return;
+  i.active=!i.active;save();render();
+}
+function deleteIntegrator(id){
+  const i=state.integrators.find(x=>x.id===id);if(!i)return;
+  if(!confirm(`Eliminare "${i.name}"? Le registrazioni storiche verranno mantenute.`))return;
+  state.integrators=state.integrators.filter(x=>x.id!==id);save();render();toast("Integratore eliminato");
+}
+
+function renderStock(){
+  if(!state.integrators.length)return `<div class="card empty"><strong>Nessuna scorta</strong><div>Aggiungi un integratore per iniziare a gestire le quantità.</div></div>`;
+  return state.integrators.map(i=>{
+    const cls=stockClass(i), days=stockDays(i);
+    return `<div class="card">
+      <div class="stock-head">
+        <div><h3>${escapeHtml(i.name)}</h3><div class="stock-meta">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} per assunzione · ${Array.isArray(i.times)?i.times.length:1} volte al giorno</div></div>
+        <span class="badge ${cls}">${stockLabel(i)}</span>
+      </div>
+      <div class="stock-amount" style="margin-top:14px">${escapeHtml(String(i.stock))} ${escapeHtml(i.unit)}</div>
+      <div class="stock-meta">${days>0?`circa ${days} giorni rimanenti`:"nessun giorno rimanente"}</div>
+      <div class="actions"><button class="primary" onclick="refillStock('${i.id}')">＋ Ricarica scorta</button></div>
+    </div>`;
+  }).join("");
+}
+function refillStock(id){
+  const i=state.integrators.find(x=>x.id===id);if(!i)return;
+  const amount=prompt(`Quante ${i.unit} vuoi aggiungere a "${i.name}"?`);
+  if(amount===null)return;
+  const n=Number(amount);
+  if(!Number.isFinite(n)||n<=0){toast("Inserisci una quantità valida");return;}
+  i.stock=Number(i.stock||0)+n;save();render();toast("Scorta aggiornata");
+}
+
+function renderSettings(){
+  return `
+    <div class="card">
+      <h3>Aspetto</h3>
+      <div class="setting-row"><div><div class="setting-title">Tema</div><div class="setting-desc">Salvato sul dispositivo</div></div>
+      <select style="max-width:145px" onchange="changeTheme(this.value)">
+        <option value="system" ${state.theme==="system"?"selected":""}>Automatico</option>
+        <option value="light" ${state.theme==="light"?"selected":""}>Chiaro</option>
+        <option value="dark" ${state.theme==="dark"?"selected":""}>Scuro</option>
+      </select></div>
+    </div>
+    <div class="card">
+      <h3>Dati</h3>
+      <div class="setting-row"><div><div class="setting-title">Esporta dati</div><div class="setting-desc">Crea un backup JSON sul dispositivo.</div></div><button class="secondary" onclick="exportData()">Esporta</button></div>
+      <div class="setting-row"><div><div class="setting-title">Importa dati</div><div class="setting-desc">Ripristina un backup precedente.</div></div><button class="secondary" onclick="document.getElementById('importFile').click()">Importa</button></div>
+      <div class="setting-row"><div><div class="setting-title">Cancella tutti i dati</div><div class="setting-desc">Elimina integratori e storico dal dispositivo.</div></div><button class="danger" onclick="clearData()">Cancella</button></div>
+      <input id="importFile" type="file" accept="application/json,.json" hidden onchange="importData(event)">
+    </div>
+    <div class="card">
+      <h3>Notifiche</h3>
+      <div class="setting-row"><div><div class="setting-title">Supporto notifiche</div><div class="setting-desc">Il browser può supportarle, ma l'app non dipende dalle notifiche per funzionare.</div></div><span>${"Notification" in window?"Disponibili":"Non disponibili"}</span></div>
+      ${"Notification" in window?`<div class="actions"><button class="secondary" onclick="requestNotifications()">Abilita notifiche</button></div>`:""}
+    </div>
+    <div class="card">
+      <h3>Informazioni</h3>
+      <div class="subtitle">App locale per la gestione degli integratori. I dati vengono salvati nel browser del dispositivo.</div>
+    </div>
+  `;
+}
+function changeTheme(v){state.theme=v;save();applyTheme();render();}
+function requestNotifications(){
+  Notification.requestPermission().then(p=>toast(p==="granted"?"Notifiche abilitate":"Permesso notifiche non concesso"));
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`backup-integratori-${localDateKey()}.json`;a.click();URL.revokeObjectURL(a.href);
+  toast("Backup esportato");
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const imported=JSON.parse(reader.result);
+      if(!Array.isArray(imported.integrators)||!Array.isArray(imported.intakes))throw new Error();
+      if(!confirm("Importare questo backup e sostituire i dati attuali?"))return;
+      state={...structuredClone(defaultState),...imported};save();render();toast("Backup importato");
+    }catch{toast("File non valido");}
+    e.target.value="";
+  };
+  reader.readAsText(file);
+}
+function clearData(){
+  if(!confirm("Vuoi davvero eliminare tutti i dati? Questa operazione non può essere annullata."))return;
+  state=structuredClone(defaultState);save();render();toast("Dati cancellati");
+}
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
+render();
+</script>
+</body>
+</html>
