@@ -196,18 +196,24 @@ function getScheduled(date){
   state.integrators.forEach(int=>{
     if(!scheduledForDate(int,date)) return;
 
-    const times=Array.isArray(int.times) && int.times.length ? int.times : [int.time||"08:00"];
+    const times=Array.isArray(int.times) && int.times.length
+      ? int.times
+      : [int.time||"08:00"];
 
-    times.forEach((time,index)=>{
+    // Se più assunzioni hanno lo stesso orario, rappresentale come
+    // una sola assunzione. La quantità resta quella indicata nella dose.
+    const uniqueTimes=[...new Set(times)].sort();
+
+    uniqueTimes.forEach(time=>{
       result.push({
         ...int,
-        scheduleId:`${int.id}_${index}`,
+        scheduleId:`${int.id}_${time.replace(":", "")}`,
         parentId:int.id,
-        time,
-        doseIndex:index
+        time
       });
     });
   });
+
   return result.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
 }
 function getIntake(intId,dateKey,scheduleId=null){
@@ -217,10 +223,11 @@ function isDone(intId,dateKey,scheduleId=null){
   return !!getIntake(intId,dateKey,scheduleId)?.done;
 }
 function stockDays(int){
-  const dailyDoses=Array.isArray(int.times)&&int.times.length ? int.times.length : 1;
+  const rawTimes=Array.isArray(int.times)&&int.times.length ? int.times : [int.time||"08:00"];
+  const dailyIntakes=new Set(rawTimes).size || 1;
   const dose=Number(int.dose)||1;
-  if(!dailyDoses || Number(int.stock)<=0) return 0;
-  return Math.floor(Number(int.stock)/(dailyDoses*dose));
+  if(Number(int.stock)<=0) return 0;
+  return Math.floor(Number(int.stock)/(dailyIntakes*dose));
 }
 function stockClass(int){
   const days=stockDays(int);
@@ -307,10 +314,11 @@ function toggleIntake(id,dateKey,scheduleId){
   const int=state.integrators.find(x=>x.id===id);
   if(!int)return;
   const existing=getIntake(id,dateKey,scheduleId);
+  const quantity=Number(int.dose)||1;
 
   if(existing?.done){
     state.intakes=state.intakes.filter(x=>x.id!==existing.id);
-    int.stock=Number(int.stock||0)+1;
+    int.stock=Number(int.stock||0)+quantity;
     toast("Assunzione annullata");
   }else{
     const now=new Date();
@@ -322,9 +330,9 @@ function toggleIntake(id,dateKey,scheduleId){
       date:dateKey,
       time:now.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}),
       done:true,
-      quantity:1
+      quantity
     });
-    int.stock=Math.max(0,Number(int.stock||0)-1);
+    int.stock=Math.max(0,Number(int.stock||0)-quantity);
     toast("Assunzione registrata");
   }
   save();render();
@@ -561,7 +569,7 @@ function renderStock(){
     const cls=stockClass(i), days=stockDays(i);
     return `<div class="card">
       <div class="stock-head">
-        <div><h3>${escapeHtml(i.name)}</h3><div class="stock-meta">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} per assunzione · ${Array.isArray(i.times)?i.times.length:1} volte al giorno</div></div>
+        <div><h3>${escapeHtml(i.name)}</h3><div class="stock-meta">${escapeHtml(String(i.dose))} ${escapeHtml(i.unit)} per assunzione · ${new Set(Array.isArray(i.times)&&i.times.length?i.times:[i.time||"08:00"]).size} volte al giorno</div></div>
         <span class="badge ${cls}">${stockLabel(i)}</span>
       </div>
       <div class="stock-amount" style="margin-top:14px">${escapeHtml(String(i.stock))} ${escapeHtml(i.unit)}</div>
